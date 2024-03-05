@@ -86,7 +86,7 @@ async fn main() {
             .collect_vec(),
     );
     let has_placeholder = cli.input_placeholder.is_some();
-    let mut fifo = Arc::new(Mutex::new(Fifo::new(cli.buffer_size.unwrap_or(1000))));
+    let fifo = Arc::new(Mutex::new(Fifo::new(cli.buffer_size.unwrap_or(1000))));
     let mut buf_reader = tokio::io::BufReader::new(tokio::io::stdin());
     let join_handle = tokio::spawn({
         let fifo = fifo.clone();
@@ -108,7 +108,7 @@ async fn main() {
                             args.push(line_buffer.trim().to_string());
                         }
                         async move {
-                            let mut child = Command::new(&args[0])
+                            let child = Command::new(&args[0])
                                 .args(&args[1..])
                                 .stdout(std::process::Stdio::piped())
                                 .spawn()
@@ -127,16 +127,17 @@ async fn main() {
                     std::process::exit(-1);
                 }
             }
-            while let Some(res) = join_set.join_next().await {}
+            while let Some(_res) = join_set.join_next().await {}
         }
     });
     while !join_handle.is_finished() {
-        for data_receiver in fifo.lock().unwrap().data_receivers.drain(..) {
+        let data_receivers = std::mem::take(&mut fifo.lock().unwrap().data_receivers);
+        for data_receiver in data_receivers {
             print!("{}", data_receiver.await.unwrap());
         }
-        tokio::time::sleep(std::time::Duration::from_millis(1)).await;
     }
-    for data_receiver in fifo.lock().unwrap().data_receivers.drain(..) {
+    let data_receivers = std::mem::take(&mut fifo.lock().unwrap().data_receivers);
+    for data_receiver in data_receivers {
         print!("{}", data_receiver.await.unwrap());
     }
 }
