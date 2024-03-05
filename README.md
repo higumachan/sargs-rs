@@ -2,6 +2,11 @@
 
 `sargs` is a command-line tool designed as an alternative to xargs. Unlike xargs, it allows for the execution of subsequent commands in a streaming fashion before the input-side program finishes. This enables real-time data processing, allowing for more efficient workflows.
 
+## Language
+
+- [日本語](README.ja.md)
+- [English](README.md)
+
 ## Features
 
 - **Asynchronous Execution:** Executes subsequent commands as soon as data becomes available, without waiting for the input-side program to completely finish.
