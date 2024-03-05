@@ -1,6 +1,6 @@
-# srgb
+# sargs
 
-`srgb` is a command-line tool designed as an alternative to xargs. Unlike xargs, it allows for the execution of subsequent commands in a streaming fashion before the input-side program finishes. This enables real-time data processing, allowing for more efficient workflows.
+`sargs` is a command-line tool designed as an alternative to xargs. Unlike xargs, it allows for the execution of subsequent commands in a streaming fashion before the input-side program finishes. This enables real-time data processing, allowing for more efficient workflows.
 
 ## Features
 
@@ -10,34 +10,34 @@
 
 ## Installation
 
-Currently, `srgb` can be installed using Cargo, the Rust package manager.
+Currently, `sargs` can be installed using Cargo, the Rust package manager.
 
 ```sh
-cargo install srgb
+cargo install sargs-cmd
 ```
 
 ## Usage
 
-The basic usage is similar to xargs, but `srgb` differs in that data is passed to the subsequent command as a stream. Below is an example of taking data from standard input and passing each line to the echo command.
+The basic usage is similar to xargs, but `sargs` differs in that data is passed to the subsequent command as a stream. Below is an example of taking data from standard input and passing each line to the echo command.
 
 ```sh
-cat example.txt | srgb echo
+cat example.txt | sargs echo
 ```
 
 The command above reads each line from `example.txt` and passes it to the `echo` command as it is read, allowing for real-time processing of the file's contents.
 The difference in behavior from xargs may not be immediately apparent in this example. 
 
-For instance, if a command that reads one line and waits for one second is inserted in the middle of the cat command, xargs will read all lines and then execute the command for all lines, while srgb will execute the command immediately after reading each line.
+For instance, if a command that reads one line and waits for one second is inserted in the middle of the cat command, xargs will read all lines and then execute the command for all lines, while sargs will execute the command immediately after reading each line.
 ```sh
-cat example.txt | slow_pass_command | srgb echo
+cat example.txt | slow_pass_command | sargs echo
 ```
 
 ## Configuration and Options
 
-`srgb` offers a wide range of customizable options. You can adjust its behavior through command-line options. All options and their descriptions can be accessed using the following command.
+`sargs` offers a wide range of customizable options. You can adjust its behavior through command-line options. All options and their descriptions can be accessed using the following command.
 
 ```sh
-srgb --help
+sargs --help
 
 Usage: sargs [OPTIONS] [ARGS]...
 
@@ -56,7 +56,7 @@ Options:
 You can specify a placeholder for the data passed to the subsequent command using the `-I` or `--input-placeholder` option.
 
 ```sh
-cat example.txt | srgb -I __INPUT__ echo __INPUT__
+cat example.txt | sargs -I __INPUT__ echo __INPUT__
 ```
 
 In the command above, `__INPUT__` will be replaced with the contents of each line when passed to the `echo` command.
@@ -67,8 +67,8 @@ You can specify the number of buffers for the output command using the `--buffer
 
 ## Contributions
 
-`srgb` is an open-source project and welcomes contributions from the community. Feel free to submit bug reports, feature suggestions, and pull requests through the GitHub repository.
+`sargs` is an open-source project and welcomes contributions from the community. Feel free to submit bug reports, feature suggestions, and pull requests through the GitHub repository.
 
 ## License
 
-`srgb` is released under the [MIT License](https://opensource.org/licenses/MIT). 
+`sargs` is released under the [MIT License](https://opensource.org/licenses/MIT). 
