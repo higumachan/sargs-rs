@@ -1,5 +1,5 @@
 [package]
-name = "sargs"
+name = "sargs-cmd"
 version = "0.1.0"
 edition = "2021"
 description = "The streaming version xargs"
@@ -19,3 +19,7 @@ itertools = "0.12.1"
 
 [lints.clippy]
 dbg_macro = "deny"
+
+[[bin]]
+name = "sargs"
+path = "src/main.rs"
