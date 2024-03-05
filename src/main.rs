@@ -116,7 +116,7 @@ async fn main() {
         for data_receiver in fifo.lock().unwrap().data_receivers.drain(..) {
             print!("{}", data_receiver.await.unwrap());
         }
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(1)).await;
     }
     for data_receiver in fifo.lock().unwrap().data_receivers.drain(..) {
         print!("{}", data_receiver.await.unwrap());
