@@ -86,7 +86,7 @@ async fn main() {
             .collect_vec(),
     );
     let has_placeholder = cli.input_placeholder.is_some();
-    let fifo = Arc::new(Mutex::new(Fifo::new(cli.buffer_size.unwrap_or(1000))));
+    let fifo = Arc::new(Mutex::new(Fifo::new(cli.buffer_size.unwrap_or(128))));
     let mut buf_reader = tokio::io::BufReader::new(tokio::io::stdin());
     let join_handle = tokio::spawn({
         let fifo = fifo.clone();
