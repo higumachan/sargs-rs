@@ -1,0 +1,2 @@
+{"name": "nadeko", "version": "1.0.0", "description": "NadekoBot"}
+{"name": "rikka", "version": "2.0.0",                "description": "RikkaBot"}
