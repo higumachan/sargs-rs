@@ -16,9 +16,10 @@ struct Cli {
 }
 
 struct Fifo {
-    data_receivers: Vec<tokio::sync::oneshot::Receiver<String>>,
-    last_wait_receiver: Option<tokio::sync::oneshot::Receiver<()>>,
+    data_receivers: Arc<Mutex<Vec<tokio::sync::oneshot::Receiver<String>>>>,
+    last_wait_receiver: Arc<Mutex<Option<tokio::sync::oneshot::Receiver<()>>>>,
     buffer_size: usize,
+    notifier: Arc<tokio::sync::Notify>,
 }
 
 enum Argument {
@@ -29,32 +30,37 @@ enum Argument {
 impl Fifo {
     fn new(buffer_size: usize) -> Self {
         Self {
-            data_receivers: Vec::with_capacity(buffer_size),
-            last_wait_receiver: None,
+            data_receivers: Arc::new(Mutex::new(Vec::new())),
+            last_wait_receiver: Arc::new(Mutex::new(None)),
             buffer_size,
+            notifier: Arc::new(tokio::sync::Notify::new()),
         }
     }
 
-    fn sender(&mut self) -> Option<FifoSender> {
-        if self.data_receivers.len() >= self.buffer_size {
+    fn sender(&self) -> Option<FifoSender> {
+        let mut data_receivers = self.data_receivers.lock().unwrap();
+        if data_receivers.len() >= self.buffer_size {
             return None;
         }
 
         let (data_sender, data_receiver) = tokio::sync::oneshot::channel();
         let (wait_sender, wait_receiver) = tokio::sync::oneshot::channel();
-        let last_wait_receiver = self.last_wait_receiver.replace(wait_receiver);
-        self.data_receivers.push(data_receiver);
+        let mut last_wait_receiver = self.last_wait_receiver.lock().unwrap();
+        let last_wait_receiver = last_wait_receiver.replace(wait_receiver);
+        data_receivers.push(data_receiver);
 
         Some(FifoSender {
             waiter: last_wait_receiver,
             data_sender,
             wait_sender,
+            notifier: self.notifier.clone(),
         })
     }
 }
 
 struct FifoSender {
     waiter: Option<tokio::sync::oneshot::Receiver<()>>,
+    notifier: Arc<tokio::sync::Notify>,
     data_sender: tokio::sync::oneshot::Sender<String>,
     wait_sender: tokio::sync::oneshot::Sender<()>,
 }
@@ -86,7 +92,7 @@ async fn main() {
             .collect_vec(),
     );
     let has_placeholder = cli.input_placeholder.is_some();
-    let fifo = Arc::new(Mutex::new(Fifo::new(cli.buffer_size.unwrap_or(128))));
+    let fifo = Arc::new(Fifo::new(cli.buffer_size.unwrap_or(128)));
     let mut buf_reader = tokio::io::BufReader::new(tokio::io::stdin());
     let join_handle = tokio::spawn({
         let fifo = fifo.clone();
@@ -94,7 +100,8 @@ async fn main() {
             let mut line_buffer = String::new();
             let mut join_set = JoinSet::new();
             while matches!(buf_reader.read_line(&mut line_buffer).await, Ok(n) if n > 0) {
-                if let Some(sender) = fifo.lock().unwrap().sender() {
+                let sender = fifo.sender();
+                if let Some(sender) = sender {
                     join_set.spawn({
                         let mut args = args
                             .clone()
@@ -116,9 +123,11 @@ async fn main() {
 
                             let output = child.wait_with_output().await.unwrap();
 
+                            let notifier = sender.notifier.clone();
                             sender
                                 .send(String::from_utf8_lossy(&output.stdout).to_string())
                                 .await;
+                            notifier.notify_one();
                         }
                     });
                     line_buffer.clear();
@@ -126,18 +135,23 @@ async fn main() {
                     eprintln!("Buffer full");
                     std::process::exit(-1);
                 }
+                // tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             }
             while let Some(_res) = join_set.join_next().await {}
         }
     });
     while !join_handle.is_finished() {
-        let data_receivers = std::mem::take(&mut fifo.lock().unwrap().data_receivers);
-        for data_receiver in data_receivers {
-            print!("{}", data_receiver.await.unwrap());
+        {
+            let mut data_receivers = fifo.data_receivers.lock().unwrap();
+            for data_receiver in data_receivers.drain(0..) {
+                print!("{}", data_receiver.await.unwrap());
+            }
         }
+
+        fifo.notifier.notified().await;
     }
-    let data_receivers = std::mem::take(&mut fifo.lock().unwrap().data_receivers);
-    for data_receiver in data_receivers {
+    let mut data_receivers = fifo.data_receivers.lock().unwrap();
+    for data_receiver in data_receivers.drain(0..) {
         print!("{}", data_receiver.await.unwrap());
     }
 }
