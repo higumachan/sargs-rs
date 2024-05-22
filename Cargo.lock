@@ -314,7 +314,7 @@ checksum = "d626bb9dae77e28219937af045c257c28bfd3f69333c512553507f5f9798cb76"
 
 [[package]]
 name = "sargs-cmd"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "itertools",
