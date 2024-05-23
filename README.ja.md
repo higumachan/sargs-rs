@@ -3,7 +3,7 @@
 ` sargs`
 は、xargsの代替として設計されたコマンドラインツールです。xargsと異なり、入力側のプログラムが終了する前に、ストリーミングで後続のコマンドを実行することができます。これにより、リアルタイムでのデータ処理が可能になり、効率的なワークフローを構築できます。
 
-![Crates.io Version](https://img.shields.io/crates/v/sargs-cmd)
+[![Crates.io Version](https://img.shields.io/crates/v/sargs-cmd)](https://crates.io/crates/sargs-cmd)
 
 # 言語
 
