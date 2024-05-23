@@ -4,7 +4,7 @@
 subsequent commands in a streaming fashion before the input-side program finishes. This enables real-time data
 processing, allowing for more efficient workflows.
 
-![Crates.io Version](https://img.shields.io/crates/v/sargs-cmd)
+[![Crates.io Version](https://img.shields.io/crates/v/sargs-cmd)](https://crates.io/crates/sargs-cmd)
 
 ## Language
 
