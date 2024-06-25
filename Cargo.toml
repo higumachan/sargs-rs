@@ -8,7 +8,7 @@ categories = ["command-line-utilities", "command-line-interface"]
 keywords = ["xargs", "streaming", "cli"]
 authors = ["Yuta Hinokuma <yuta.hinokuma725@gmail.com>"]
 readme = "README.md"
-homepage = "https://github.com/higumachan/sargs-rs/tree/main"
+repository = "https://github.com/higumachan/sargs-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
